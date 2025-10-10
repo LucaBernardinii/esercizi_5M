@@ -1,4 +1,5 @@
 import sqlite3
+from typing import List, Tuple
 
 def create_tables():
     conn = sqlite3.connect('libreria.db')
@@ -76,21 +77,110 @@ def insert_data():
         conn.close()
 
 
-def query_libri_per_autore(autore_id):
-    pass
+def query_libri_per_autore(autore_id: int) -> List[Tuple[int, str, int, str]]:
+    conn = sqlite3.connect('libreria.db')
+    cursor = conn.cursor()
+    """Restituisce tutti i libri di un autore specifico (usa JOIN)."""
+    cursor.execute("""
+        SELECT Libri.id, Libri.titolo, Libri.anno, Libri.genere
+        FROM Libri
+        JOIN Autori ON Libri.autore_id = Autori.id
+        WHERE Autori.id = ?
+    """, (autore_id,))
+    return cursor.fetchall()
 
-def query_prestiti_per_utente(utente):
-    pass
+def query_prestiti_per_utente(utente: str) -> List[Tuple[int, str, str, str]]:
+    conn = sqlite3.connect('libreria.db')
+    cursor = conn.cursor()
+    """Restituisce i prestiti di un utente (usa JOIN)."""
+    cursor.execute("""
+        SELECT Prestiti.id, Libri.titolo, Prestiti.data_prestito, Prestiti.data_restituzione
+        FROM Prestiti
+        JOIN Libri ON Prestiti.libro_id = Libri.id
+        WHERE Prestiti.utente = ?
+    """, (utente,))
+    return cursor.fetchall()
 
-def query_libri_per_genere():
-    pass
+def query_libri_per_genere() -> List[Tuple[str, int]]:
+    conn = sqlite3.connect('libreria.db')
+    cursor = conn.cursor()
+    """Restituisce il numero di libri per genere (usa GROUP BY)."""
+    cursor.execute("""
+        SELECT genere, COUNT(*) AS num_libri
+        FROM Libri
+        GROUP BY genere
+    """)
+    return cursor.fetchall()
 
-def query_autori_con_piu_libri():
-    pass
+def query_autori_con_piu_libri() -> List[Tuple[str, str, int]]:
+    conn = sqlite3.connect('libreria.db')
+    cursor = conn.cursor()
+    """Restituisce gli autori ordinati per numero di libri (usa JOIN, GROUP BY, ORDER BY)."""
+    cursor.execute("""
+        SELECT Autori.nome, Autori.cognome, COUNT(Libri.id) AS num_libri
+        FROM Autori
+        LEFT JOIN Libri ON Autori.id = Libri.autore_id
+        GROUP BY Autori.id
+        ORDER BY num_libri DESC
+    """)
+    return cursor.fetchall()
 
-def query_prestiti_non_restituiti():
-    pass
+def query_prestiti_non_restituiti() -> List[Tuple[int, str, str, str]]:
+    conn = sqlite3.connect('libreria.db')
+    cursor = conn.cursor()
+    """Restituisce i prestiti non ancora restituiti (data_restituzione IS NULL)."""
+    cursor.execute("""
+        SELECT Prestiti.id, Libri.titolo, Prestiti.utente, Prestiti.data_prestito
+        FROM Prestiti
+        JOIN Libri ON Prestiti.libro_id = Libri.id
+        WHERE Prestiti.data_restituzione IS NULL
+    """)
+    return cursor.fetchall()
+
 
 if __name__ == "__main__":
-    create_tables()
-    insert_data()
+    conn = sqlite3.connect('libreria.db')
+    cursor = conn.cursor()
+    try:
+        create_tables()
+        insert_data()
+        print("Database creato e dati inseriti con successo.\n")
+
+        # Query 3: Libri per autore (es. autore_id=1)
+        print("3) Libri dell'autore con id 1:")
+        libri_autore = query_libri_per_autore(1)
+        for libro in libri_autore:
+            print(f"ID: {libro[0]}, Titolo: {libro[1]}, Anno: {libro[2]}, Genere: {libro[3]}")
+        print()
+
+        # Query 4: Prestiti per utente (es. 'Mario Rossi')
+        print("4) Prestiti dell'utente 'Mario Rossi':")
+        prestiti_utente = query_prestiti_per_utente('Mario Rossi')
+        for prestito in prestiti_utente:
+            print(f"ID Prestito: {prestito[0]}, Titolo Libro: {prestito[1]}, Data Prestito: {prestito[2]}, Data Restituzione: {prestito[3]}")
+        print()
+
+        # Query 5: Libri per genere
+        print("5) Numero di libri per genere:")
+        libri_genere = query_libri_per_genere()
+        for genere in libri_genere:
+            print(f"Genere: {genere[0]}, Numero libri: {genere[1]}")
+        print()
+
+        # Query 6: Autori con più libri
+        print("6) Autori ordinati per numero di libri:")
+        autori_libri = query_autori_con_piu_libri()
+        for autore in autori_libri:
+            print(f"Nome: {autore[0]}, Cognome: {autore[1]}, Numero libri: {autore[2]}")
+        print()
+
+        # Query 7: Prestiti non restituiti
+        print("7) Prestiti non ancora restituiti:")
+        prestiti_non_restituiti = query_prestiti_non_restituiti()
+        for prestito in prestiti_non_restituiti:
+            print(f"ID Prestito: {prestito[0]}, Titolo Libro: {prestito[1]}, Utente: {prestito[2]}, Data Prestito: {prestito[3]}")
+
+    finally:
+        # Chiusura connessione
+        conn.close()
+        print("\nConnessione chiusa.")
