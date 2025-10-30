@@ -1,10 +1,5 @@
 ```mermaid
-    erdiagram
-        Negozi ||--o{ Dipendenti : "lavora"
-        Negozi ||--o{ Scontrino : "effettua"
-        Artisti ||--o{ AlbumVirtuale : "produce"
-        Scontrino ||--o{ RigheScontrino : "dettaglia"
-        RigheScontrino }o--|| AlbumVirtuale : "riguarda"
+    erDiagram
         RigheScontrino {
             INTEGER id PK
             INTEGER scontrino_id FK
@@ -47,4 +42,10 @@
             DATE data
             INTEGER negozio_id FK
             REAL importo_totale
+        }
+        Negozi ||--o{ Dipendenti : "lavora"
+        Negozi ||--o{ Scontrino : "effettua"
+        Artisti ||--o{ AlbumVirtuale : "produce"
+        Scontrino ||--o{ RigheScontrino : "dettaglia"
+        RigheScontrino }o--|| AlbumVirtuale : "riguarda"
 ```
