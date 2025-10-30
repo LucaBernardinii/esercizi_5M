@@ -154,3 +154,25 @@ FROM AlbumVirtuale
 JOIN Artisti
 ON Artisti.id = AlbumVirtuale.artista_id
 GROUP BY nome, cognome;
+
+-- QUERY 5: Join con aggregazione
+-- Calcolare il totale delle vendite per ogni artista
+SELECT AlbumVirtuale.artista_id, COUNT(*) AS num_vendite
+FROM AlbumVirtuale
+JOIN RigheScontrino
+ON AlbumVirtuale.codice = RigheScontrino.album_id
+GROUP BY AlbumVirtuale.artista_id;
+
+-- QUERY 6: Query con wildcards (LIKE)
+-- Trovare album con 'a' nel titolo
+SELECT *
+FROM AlbumVirtuale
+WHERE AlbumVirtuale.titolo LIKE "%a%";
+
+-- QUERY 7: LEFT JOIN con aggregazione
+-- Elencare tutti gli artisti e il numero di album venduti (incluso 0 se non hanno vendite)
+SELECT AlbumVirtuale.artista_id, COUNT(*) AS num_vendite
+FROM AlbumVirtuale
+LEFT JOIN RigheScontrino
+ON AlbumVirtuale.codice = RigheScontrino.album_id
+GROUP BY AlbumVirtuale.artista_id;
