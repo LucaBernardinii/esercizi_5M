@@ -1,38 +1,50 @@
-erDiagram
-    NEGOZIO {
-        str id PK
-        str indirizzo
-        str citta
-    }
+```mermaid
+    erdiagram
+        Negozi ||--o{ Dipendenti : "lavora"
+        Negozi ||--o{ Scontrino : "effettua"
+        Artisti ||--o{ AlbumVirtuale : "produce"
+        Scontrino ||--o{ RigheScontrino : "dettaglia"
+        RigheScontrino }o--|| AlbumVirtuale : "riguarda"
+        RigheScontrino {
+            INTEGER id PK
+            INTEGER scontrino_id FK
+            INTEGER album_id FK
+            INTEGER quantita
+            REAL prezzo_unitario
+        }
 
-    DIPENDENTE {
-        str id PK
-        str nome
-        str negozio FK
-    }
+        %% Scontrino }o--o{ AlbumVirtuale : "puo essere venduto in"
 
-    ALBUM {
-        str id PK
-        str titolo
-        float prezzo
-    }
+        Negozi {
+            INTEGER codice PK
+            TEXT indirizzo
+            TEXT citta
+        }
 
-    VENDITA {
-        str id PK
-        date data
-        str negozio FK
-        float importo_totale
-    }
+        Dipendenti {
+            INTEGER id PK
+            TEXT nome
+            TEXT cognome
+            INTEGER negozio_id FK
+        }
 
-    RIGA_VENDITA {
-        str id PK
-        str vendita FK
-        str album FK
-        int quantita
-        float prezzo_unitario
-    }
+        Artisti {
+            INTEGER id PK
+            TEXT nome
+            TEXT cognome
+        }
 
-NEGOZIO ||--o{ DIPENDENTE : "lavorano"
-ARTISTA ||--o{ ALBUM : "pubblica"
-NEGOZIO ||--o{ VENDITA : "effettua"
-VENDITA ||--o{ RIGA_VENDITA : "contiene"
+        AlbumVirtuale {
+            INTEGER codice PK
+            TEXT titolo
+            REAL prezzo
+            INTEGER quantita
+            INTEGER artista_id FK
+        }
+
+        Scontrino {
+            INTEGER id PK
+            DATE data
+            INTEGER negozio_id FK
+            REAL importo_totale
+```
