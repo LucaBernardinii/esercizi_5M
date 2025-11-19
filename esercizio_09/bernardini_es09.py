@@ -1,4 +1,3 @@
-# ...existing code...
 import requests
 import json
 
@@ -7,7 +6,6 @@ user_id = 1
 timeout = 10
 
 try:
-    # 1) Recupera tutti i post dell'utente con ID = 1
     posts_resp = requests.get(f"{url}/posts", params={"userId": user_id}, timeout=timeout)
     posts_resp.raise_for_status()
     posts = posts_resp.json()
@@ -15,16 +13,13 @@ try:
 
     if not posts:
         print("Nessun post trovato per l'utente 1.")
-        return
 
     for p in posts:
         print(f"ID Post: {p['id']}, Titolo: {p['title']}")
 
-    # Prendi il primo post
     first_post = posts[0]
     post_id = first_post["id"]
 
-    # 2) Recupera i commenti per il primo post
     comments_resp = requests.get(f"{url}/posts/{post_id}/comments", timeout=timeout)
     comments_resp.raise_for_status()
     comments = comments_resp.json()
@@ -33,7 +28,6 @@ try:
     for c in comments:
         print(f"- {c['name']}: {c['body']}")
 
-    # 3) Crea un nuovo commento per il primo post (POST)
     nuovo_commento = {
         "postId": post_id,
         "name": "Nuovo Commentatore",
