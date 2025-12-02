@@ -1,70 +1,140 @@
 import requests
+from typing import Optional
 
-def main():
-    base = 'https://jsonplaceholder.typicode.com'
+
+def get_posts_by_user(user_id: int) -> Optional[list]:
+    """Recupera tutti i post pubblicati dall'utente con l'ID specificato."""
     try:
-        r = requests.get(f'{base}/posts', params={'userId': 1}, timeout=10)
-        r.raise_for_status()
-        posts = r.json()
-    except requests.RequestException as e:
-        print(f'Errore recupero post: {e}')
+        response = requests.get(
+            f"https://jsonplaceholder.typicode.com/posts?userId={user_id}"
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nel recupero dei post: {e}")
+        return None
+
+
+def get_comments_for_post(post_id: int) -> Optional[list]:
+    """Recupera i commenti per un post specifico."""
+    try:
+        response = requests.get(
+            f"https://jsonplaceholder.typicode.com/posts/{post_id}/comments"
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nel recupero dei commenti: {e}")
+        return None
+
+
+def create_comment(post_id: int, name: str, email: str, body: str) -> Optional[dict]:
+    """Crea un nuovo commento per un post specifico."""
+    comment_data = {"postId": post_id, "name": name, "email": email, "body": body}
+    try:
+        response = requests.post(
+            "https://jsonplaceholder.typicode.com/comments", json=comment_data
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella creazione del commento: {e}")
+        return None
+
+
+def delete_comment(comment_id: int) -> bool:
+    """Elimina un commento specifico."""
+    try:
+        response = requests.delete(
+            f"https://jsonplaceholder.typicode.com/comments/{comment_id}"
+        )
+        response.raise_for_status()
+        return response.ok  # JSONPlaceholder returns 200 for DELETE
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nell'eliminazione del commento: {e}")
+        return False
+
+
+def main() -> None:
+    user_id = 1
+
+    # FASE 1: Recupera tutti i post pubblicati dall'utente con ID = 1
+    print("FASE 1: Recupero dei post")
+    posts = get_posts_by_user(user_id)
+    if posts is None or not posts:
+        print("Nessun post trovato.")
         return
 
-    posts_info = []
-    for p in posts:
-        pid = p.get('id')
-        title = p.get('title', '')
-        try:
-            rc = requests.get(f'{base}/posts/{pid}/comments', timeout=10)
-            rc.raise_for_status()
-            comments = rc.json()
-        except requests.RequestException as e:
-            print(f'Errore recupero commenti per post {pid}: {e}')
-            comments = []
-        posts_info.append({'id': pid, 'title': title, 'comments': comments})
-
+    # FASE 2: Per ciascun post, recupera il numero di commenti e identifica il post con il maggior numero di commenti
+    print("\nFASE 2: Analisi commenti e identificazione post con più commenti")
     print("--- Post dell'utente 1 ---")
-    for pi in posts_info:
-        print(f"Post ID: {pi['id']}, Titolo: {pi['title']}, Commenti: {len(pi['comments'])}")
+    max_comments_post_id = None
+    max_comments_count = -1
+    for post in posts:
+        comments = get_comments_for_post(post["id"])
+        if comments is None:
+            comments = []
+        count = len(comments)
+        print(
+            f"Post ID: {post['id']}, Titolo: {post['title'][:30]}..., Commenti: {count}"
+        )
+        if count > max_comments_count:
+            max_comments_count = count
+            max_comments_post_id = post["id"]
 
-    if not posts_info:
-        print('Nessun post trovato per l\'utente 1.')
+    if max_comments_count == -1:
+        print("Nessun commento trovato.")
         return
 
-    selected = max(posts_info, key=lambda x: len(x['comments']))
+    post_details = None
+    for p in posts:
+        if p["id"] == max_comments_post_id:
+            post_details = p
+            break
 
-    print('\n--- Post con più commenti ---')
-    print(f"ID: {selected['id']}, Titolo: {selected['title']}, Commenti: {len(selected['comments'])}")
+    print("\n--- Post con più commenti ---")
+    print(
+        f"ID: {post_details['id']}, Titolo: {post_details['title']}, Commenti: {max_comments_count}"
+    )
 
-    print('\n--- Azione intrapresa ---')
-    if len(selected['comments']) < 5:
-        payload = {
-            'postId': selected['id'],
-            'name': 'Commento automatico',
-            'email': 'auto@example.com',
-            'body': 'Commento creato automaticamente perché il post aveva meno di 5 commenti.'
-        }
-        try:
-            rp = requests.post(f'{base}/comments', json=payload, timeout=10)
-            rp.raise_for_status()
-            created = rp.json()
-            print(f"Poiché il post ha meno di 5 commenti, creato nuovo commento ID: {created.get('id')}")
-        except requests.RequestException as e:
-            print(f'Errore creazione commento: {e}')
+    # FASE 3: Azione basata sul numero di commenti (crea commento o elimina)
+    print("\nFASE 3: Azione basata sul numero di commenti")
+    if max_comments_count < 5:
+        # Crea un nuovo commento
+        new_comment = create_comment(
+            post_id=max_comments_post_id,
+            name="Nuovo Commentatore",
+            email="nuovo@example.com",
+            body="Questo è un commento aggiunto automaticamente!",
+        )
+        if new_comment is None:
+            return
+        print("Poiché il post ha meno di 5 commenti, creato un nuovo commento.")
+        print(f"Nuovo commento ID: {new_comment['id']}")
     else:
-        if selected['comments']:
-            oldest = min(selected['comments'], key=lambda c: c.get('id', float('inf')))
-            cid = oldest.get('id')
-            try:
-                rd = requests.delete(f'{base}/comments/{cid}', timeout=10)
-                if rd.status_code in (200, 204):
-                    print(f"Poiché il post ha 5 o più commenti, eliminato il commento ID: {cid} (il più vecchio).")
-                else:
-                    print(f'Errore eliminazione commento ID {cid}: status {rd.status_code}')
-            except requests.RequestException as e:
-                print(f'Errore eliminazione commento: {e}')
+        # Elimina il commento più vecchio
+        comments = get_comments_for_post(max_comments_post_id)
+        if comments is None:
+            comments = []
+        if comments:
+            oldest_comment = None
+            min_id = float("inf")
+            for c in comments:
+                if c["id"] < min_id:
+                    min_id = c["id"]
+                    oldest_comment = c
+            success = delete_comment(oldest_comment["id"])
+            if success:
+                print(
+                    f"Poiché il post ha 5 o più commenti, eliminato il commento ID: {oldest_comment['id']} (il più vecchio)."
+                )
+            else:
+                print("Errore nell'eliminazione del commento.")
         else:
-            print('Il post ha 5 o più commenti ma non sono stati trovati commenti effettivi da eliminare.')
+            print("Nessun commento da eliminare.")
+
+    # FASE 4: Gestione errori e stampa risultati (già inclusa nelle fasi precedenti con try/except nelle funzioni)
+
 
 if __name__ == "__main__":
     main()
