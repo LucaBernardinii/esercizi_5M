@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Video App{% endblock %}
+
+{% block extra_style %}
+<style>
+    .canali-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .canale-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .canale-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+    }
+    .canale-card h2 {
+        margin-bottom: 10px;
+        font-size: 1.5em;
+    }
+    .canale-card p {
+        margin: 5px 0;
+        font-size: 0.95em;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Benvenuto in Video App</h2>
+    <p style="margin-bottom: 20px; color: #666;">Scopri i canali e i loro video.</p>
+    
+    {% if canali %}
+    <div class="canali-grid">
+        {% for canale in canali %}
+        <a href="{{ url_for('main.canale_dettaglio', canale_id=canale.id) }}" class="canale-card">
+            <h2>{{ canale.nome }}</h2>
+            <p><strong>Categoria:</strong> {{ canale.categoria }}</p>
+            <p><strong>Iscritti:</strong> {{ "{:,}".format(canale.numero_iscritti) }}</p>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Nessun canale al momento. <a href="{{ url_for('main.nuovo_canale') }}">Crea il primo canale!</a></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
