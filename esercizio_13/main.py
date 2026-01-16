@@ -1,4 +1,3 @@
-# app/main.py
 from flask import Blueprint, render_template, request, redirect, url_for, g
 from .db import get_db
 
@@ -36,7 +35,6 @@ def nuovo_canale():
             db.commit()
             return redirect(url_for('main.index'))
 
-        # Se c'è un errore, lo mostriamo
         return render_template('nuovo_canale.html', error=error)
 
     return render_template('nuovo_canale.html')
