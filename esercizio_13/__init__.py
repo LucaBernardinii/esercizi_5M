@@ -1,45 +1,42 @@
 import os
-import sqlite3
 from flask import Flask
 
-def get_db(app):
-    """Ritorna la connessione al database SQLite."""
-    conn = sqlite3.connect(
-        os.path.join(app.instance_path, 'video_app.sqlite')
-    )
-    conn.row_factory = sqlite3.Row  # Ritorna i dati come dizionari
-    return conn
-
-def init_db(app):
-    """Inizializza il database con lo schema SQL."""
-    db = get_db(app)
-    with open(os.path.join(os.path.dirname(__file__), 'schema.sql'), 'r') as f:
-        db.executescript(f.read())
-    db.commit()
-    db.close()
-
 def create_app():
-    """Factory function per creare l'app Flask."""
+    # 1. Creiamo l'istanza di Flask
+    # instance_relative_config=True dice a Flask: 
+    # "Cerca la cartella 'instance' fuori da 'app', non dentro."
     app = Flask(__name__, instance_relative_config=True)
-    
-    # Configurazione di base
+
+    # 2. Configurazione di base
+    # Qui impostiamo le variabili fondamentali.
     app.config.from_mapping(
+        # SECRET_KEY serve a Flask per firmare i dati sicuri (es. sessioni).
+        # 'dev' va bene per sviluppare, ma in produzione andrà cambiata.
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'video_app.sqlite'),
+        # Diciamo a Flask dove salvare il file del database SQLite
+        DATABASE=os.path.join(app.instance_path, 'video_canali.sqlite'),
     )
-    
-    # Assicuriamo che la cartella instance esista
+
+    # Assicuriamo che la cartella 'instance' esista
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    # 3. Registriamo le funzioni di chiusura del database
+    from . import db
+    app.teardown_appcontext(db.close_db)
     
-    # Inizializzare il database al primo avvio
-    if not os.path.exists(app.config['DATABASE']):
-        init_db(app)
-    
-    # Registriamo il blueprint principale
+    # 4. Creiamo un comando CLI per inizializzare il database
+    @app.cli.command('init-db')
+    def init_db_command():
+        """Inizializza il database."""
+        db.init_db()
+        print('Database inizializzato.')
+
+    # --- REGISTRAZIONE BLUEPRINTS ---
     from . import main
     app.register_blueprint(main.bp)
-    
+    # --------------------------------
+
     return app

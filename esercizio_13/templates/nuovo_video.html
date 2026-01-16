@@ -1,101 +1,19 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Aggiungi Video - Video App{% endblock %}
-
-{% block extra_style %}
-<style>
-    .form-container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .form-group {
-        margin-bottom: 20px;
-    }
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #333;
-    }
-    input[type="text"],
-    input[type="number"],
-    input[type="url"] {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 1em;
-        font-family: inherit;
-    }
-    input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    button {
-        background: #667eea;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1em;
-        transition: background 0.3s;
-    }
-    button:hover {
-        background: #764ba2;
-    }
-    .back-link {
-        margin-top: 20px;
-        text-align: center;
-    }
-    .back-link a {
-        color: #667eea;
-        text-decoration: none;
-    }
-    .back-link a:hover {
-        text-decoration: underline;
-    }
-    .form-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 30px;
-    }
-</style>
-{% endblock %}
+{% block title %}Nuovo Video - {{ canale['nome'] }}{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <div class="form-header">
-        <h2>Aggiungi Video a {{ canale.nome }}</h2>
-        <p>Riempi i campi per creare un nuovo video</p>
-    </div>
+    <h2>Aggiungi Video a {{ canale['nome'] }}</h2>
     
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
     <form method="post">
-        <div class="form-group">
-            <label for="titolo">Titolo del Video *</label>
-            <input type="text" id="titolo" name="titolo" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="durata">Durata (in secondi) *</label>
-            <input type="number" id="durata" name="durata" min="1" required>
-            <small style="color: #666;">Esempio: 600 secondi = 10 minuti</small>
-        </div>
-        
-        <div class="form-group">
-            <label for="immagine">Immagine (URL o nome file)</label>
-            <input type="text" id="immagine" name="immagine" placeholder="es. thumbnail.jpg">
-            <small style="color: #666;">Opzionale - URL dell'immagine di anteprima</small>
-        </div>
-        
+        <label>Titolo del Video: <input type="text" name="titolo" required></label><br><br>
+        <label>Durata (in secondi): <input type="number" name="durata" required min="1"></label><br><br>
+        <label>Immagine (URL o nome file): <input type="text" name="immagine"></label><br><br>
         <button type="submit">Aggiungi Video</button>
+        <a href="{{ url_for('main.dettagli_canale', canale_id=canale['id']) }}">Annulla</a>
     </form>
-    
-    <div class="back-link">
-        <a href="{{ url_for('main.canale_dettaglio', canale_id=canale.id) }}">← Torna al Canale</a>
-    </div>
-</div>
 {% endblock %}

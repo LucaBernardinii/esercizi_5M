@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ canale['nome'] }}{% endblock %}
+
+{% block content %}
+    <h2>{{ canale['nome'] }}</h2>
+    <p>Categoria: {{ canale['categoria'] }} | Iscritti: {{ canale['numero_iscritti'] }}</p>
+
+    <a href="{{ url_for('main.nuovo_video', canale_id=canale['id']) }}">Aggiungi Video</a>
+
+    <h3>Video:</h3>
+    {% if video %}
+        <ul>
+            {% for v in video %}
+                <li>
+                    <strong>{{ v['titolo'] }}</strong>
+                    {% set minuti = v['durata'] // 60 %}
+                    {% set secondi = v['durata'] % 60 %}
+                    {% if minuti > 0 %}
+                        ({{ minuti }}m {{ secondi }}s)
+                    {% else %}
+                        ({{ secondi }}s)
+                    {% endif %}
+                    {% if v['immagine'] %}
+                        - {{ v['immagine'] }}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nessun video. <a href="{{ url_for('main.nuovo_video', canale_id=canale['id']) }}">Aggiungine uno!</a></p>
+    {% endif %}
+
+    <hr>
+    <a href="{{ url_for('main.index') }}">← Torna alla Home</a>
+{% endblock %}
