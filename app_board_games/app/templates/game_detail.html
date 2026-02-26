@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ game.nome }} - Partite</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        a { color: blue; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="/">← Torna ai Giochi</a>
+    
+    <h1>{{ game.nome }}</h1>
+    <p><strong>Categoria:</strong> {{ game.categoria }}</p>
+    <p><strong>Max Giocatori:</strong> {{ game.numero_giocatori_massimo }}</p>
+    <p><strong>Durata Media:</strong> {{ game.durata_media }} minuti</p>
+    
+    <h2>Aggiungi una Partita</h2>
+    <form method="POST" action="/gioco/{{ game.id }}/add_partita">
+        <input type="date" name="data" required>
+        <input type="text" name="vincitore" placeholder="Vincitore" required>
+        <input type="number" name="punteggio_vincitore" placeholder="Punteggio" required>
+        <button type="submit">Aggiungi Partita</button>
+    </form>
+    
+    <h2>Partite Registrate</h2>
+    {% if partite %}
+    <table>
+        <tr>
+            <th>Data</th>
+            <th>Vincitore</th>
+            <th>Punteggio</th>
+        </tr>
+        {% for partita in partite %}
+        <tr>
+            <td>{{ partita.data }}</td>
+            <td>{{ partita.vincitore }}</td>
+            <td>{{ partita.punteggio_vincitore }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Nessuna partita registrata.</p>
+    {% endif %}
+</body>
+</html>

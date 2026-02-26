@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Board Games App</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        a { color: blue; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>I Miei Giochi da Tavolo</h1>
+    
+    <h2>Aggiungi un Gioco</h2>
+    <form method="POST" action="/add">
+        <input type="text" name="nome" placeholder="Nome" required>
+        <input type="number" name="numero_giocatori_massimo" placeholder="Max Giocatori" required>
+        <input type="number" name="durata_media" placeholder="Durata (minuti)" required>
+        <input type="text" name="categoria" placeholder="Categoria" required>
+        <button type="submit">Aggiungi</button>
+    </form>
+    
+    <h2>Elenco Giochi</h2>
+    <table>
+        <tr>
+            <th>Nome</th>
+            <th>Max Giocatori</th>
+            <th>Durata (min)</th>
+            <th>Categoria</th>
+            <th>Azioni</th>
+        </tr>
+        {% for game in games %}
+        <tr>
+            <td>{{ game.nome }}</td>
+            <td>{{ game.numero_giocatori_massimo }}</td>
+            <td>{{ game.durata_media }}</td>
+            <td>{{ game.categoria }}</td>
+            <td><a href="/gioco/{{ game.id }}">Vedi Partite</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
